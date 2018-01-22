@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "Kitten Tricks",
-    "slug": "kitten-tricks",
+    "name": "Animation Source",
+    "slug": "animation-source",
     "githubUrl": "https://github.com/akveo/kittenTricks",
-    "sdkVersion": "24.0.0",
+    "sdkVersion": "25.0.0",
     "icon": "./icon.png",
     "orientation": "portrait",
     "loading": {
@@ -13,14 +13,14 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "bundleIdentifier": "com.akveo.kittentricks",
+      "bundleIdentifier": "com.thetoto.animationsource",
       "buildNumber": "1.0.10",
       "supportsTablet": true
     },
     "android": {
-      "package": "com.akveo.kittentricks",
+      "package": "com.thetoto.animationsource",
       "versionCode": 16
     },
-    "version": "1.0.10"
+    "version": "0.1.0"
   }
 }

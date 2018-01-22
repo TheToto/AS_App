@@ -16,6 +16,9 @@ import {
 import {FontAwesome} from '../../assets/icons';
 import {GradientButton} from '../../components/gradientButton';
 import {scale, scaleModerate, scaleVertical} from '../../utils/scale';
+import { UIConstants } from '../../config/appConstants';
+
+import axios from 'axios';
 
 export class LoginV1 extends React.Component {
   static navigationOptions = {
@@ -24,6 +27,10 @@ export class LoginV1 extends React.Component {
 
   constructor(props) {
     super(props);
+    this.state = {
+      user: "",
+      pass: ""
+    }
   }
 
   _renderImage(image) {
@@ -38,6 +45,37 @@ export class LoginV1 extends React.Component {
       image = (<Image style={[styles.image, {height, width}]}
                       source={require('../../assets/images/backgroundLoginV1DarkTheme.png')}/>);
     return image;
+  }
+
+  sendLog() {
+    let that = this;
+    axios.request({
+      method: "post",
+      url: "https://as-api-thetoto.herokuapp.com/connect",
+      data: {
+        'user': that.state.user, 
+        'pass': that.state.pass
+      }
+    }).then(res => {
+      if (res.data.success) {
+        UIConstants.cookie = res.data.cookie;
+        console.log(res.data.cookie);
+        Expo.SecureStore.setItemAsync('cookie', res.data.cookie);
+        UIConstants.avatar = res.data.infos.avatar;
+        Expo.SecureStore.setItemAsync('avatar', res.data.infos.avatar);
+        UIConstants.pseudo = res.data.infos.pseudo;
+        Expo.SecureStore.setItemAsync('pseudo', res.data.infos.pseudo);
+        UIConstants.id = res.data.infos.id;
+        Expo.SecureStore.setItemAsync('id', res.data.infos.id);
+        UIConstants.success = true;
+        alert('Vous êtes connecté !');
+        that.props.navigation.goBack()
+      } else {
+        alert('Erreur de connexion. Vérifiez vos infos.');
+      }
+
+    });
+    
   }
 
   render() {
@@ -61,10 +99,14 @@ export class LoginV1 extends React.Component {
               <RkText rkType='awesome hero accentColor'>{FontAwesome.facebook}</RkText>
             </RkButton>
           </View>
-          <RkTextInput rkType='rounded' placeholder='Username'/>
-          <RkTextInput rkType='rounded' placeholder='Password' secureTextEntry={true}/>
+          <RkTextInput rkType='rounded' placeholder='Username'
+          onChangeText={(text) => this.setState({user: text})}
+          value={this.state.user} />
+          <RkTextInput rkType='rounded' placeholder='Password' secureTextEntry={true}
+          onChangeText={(text) => this.setState({pass: text})}
+          value={this.state.pass} />
           <GradientButton onPress={() => {
-            this.props.navigation.goBack()
+            this.sendLog();
           }} rkType='large' style={styles.save} text='LOGIN'/>
           <View style={styles.footer}>
             <View style={styles.textRow}>

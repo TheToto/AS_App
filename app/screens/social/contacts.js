@@ -46,7 +46,7 @@ export class Contacts extends React.Component {
   _renderRow(row) {
     let name = `${row.firstName} ${row.lastName}`;
     return (
-      <TouchableOpacity onPress={() => this.props.navigation.navigate('ProfileV1', {id: row.id})}>
+      <TouchableOpacity onPress={() => this.props.navigation.navigate('ProfileV2', {id: row.id})}>
         <View style={styles.container}>
           <Avatar rkType='circle' style={styles.avatar} img={row.photo}/>
           <RkText>{name}</RkText>

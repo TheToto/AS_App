@@ -13,8 +13,9 @@ import {
   RkText,
   RkTheme
 } from 'react-native-ui-kitten';
-import {MainRoutes} from '../../config/navigation/routes';
+import {MyRoutes,MainRoutes} from '../../config/navigation/routes';
 import {FontAwesome} from '../../assets/icons';
+import { UIConstants } from '../../config/appConstants';
 
 export class SideMenu extends React.Component {
 
@@ -41,7 +42,7 @@ export class SideMenu extends React.Component {
   }
 
   render() {
-    let menu = MainRoutes.map((route, index) => {
+    let menu = MyRoutes.map((route, index) => {
       return (
         <TouchableHighlight
           style={styles.container}
@@ -67,7 +68,7 @@ export class SideMenu extends React.Component {
           showsVerticalScrollIndicator={false}>
           <View style={[styles.container, styles.content]}>
             {this._renderIcon()}
-            <RkText rkType='logo'>UI Kitten</RkText>
+            <RkText rkType='logo'>{UIConstants.getCurrentSiteName()}</RkText>
           </View>
           {menu}
         </ScrollView>
