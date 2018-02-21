@@ -24,43 +24,23 @@ import {scale} from '../../utils/scale';
 import formatNumber from '../../utils/textUtils';
 import MyWebView from 'react-native-webview-autoheight';
 import { UIConstants } from '../../config/appConstants';
-
-class MyListItem extends React.PureComponent {
-  constructor(props) {
-    super(props);
-  }
-  render() {
-    let navigate = this.props.navigation.navigate;
-    return (
-      <View style={styles3.container}>
-      <TouchableOpacity onPress={() => navigate('ProfileV2', {id: this.props.item.item.author.id})}>
-        <Avatar rkType='circle' style={styles2.avatar} img={{uri: this.props.item.item.author.avatar}}/>
-      </TouchableOpacity>
-      <View style={styles3.content}>
-        <View style={styles3.contentHeader}>
-          <RkText rkType='header5'>{this.props.item.item.author.name}</RkText>
-          <RkText rkType='secondary4 hintColor'>
-            {this.props.item.item.date}
-          </RkText>
-        </View>
-        <RkText rkType='primary3 mediumLine'>{this.props.item.item.content}</RkText>
-      </View>
-    </View>
-    )
-  }
-}
+import { ComDrawer } from '../../components/comdrawer';
+const moment = require('moment');
 
 export class ProfileV2 extends React.Component {
-  static navigationOptions = {
-    title: 'User Profile'.toUpperCase()
+  static navigationOptions = ({navigation}) => {
+    return (
+      {
+        title: typeof(navigation.state.params)==='undefined' || typeof(navigation.state.params.title) === 'undefined' ? 'Profil': navigation.state.params.title,
+      });
   };
 
   constructor(props) {
     super(props);
     let {params} = this.props.navigation.state;
-    let id = params ? params.id : UIConstants.id;
+    this.id = params ? params.id : UIConstants.id;
     this.state = {
-      id: id,
+      id: this.id,
       page:2,
       message:"",
       comments: [{
@@ -74,211 +54,132 @@ export class ProfileV2 extends React.Component {
         "content": "Loading..."
       }],
       "infos": {
-        "lang": "...",
+        galleries: {},
         "pseudo": "Loading...",
-        "forumid": "...",
         "online": false,
-        "main": {
-          "Mygroup": "Loading...",
-          "Country": "france"
-        },
-        "desc": "<p>Loading...</p>\n"
+        "main": { registration: 0},
+        "desc": "Loading..."
       }
     }
-    let that = this;
-
-    fetch("https://as-api-thetoto.herokuapp.com/profile/"+id).then(response => response.json())
-    .then(data => {
-      console.log('act profile ' + id);
-      that.setState(data);
-    })
-    .catch(error => console.log('error:', error));
-    //this.user = data.getUser(id);
-
-    this.renderItem = this._renderItem.bind(this);
   }
   componentDidMount() {
-    //this.getComs(true);
-  }
-
-  getComs(bool) {
     let that = this;
-    let url = "https://as-api-thetoto.herokuapp.com/profile/" + this.state.id + "/comments?page=" + this.state.page;
-    if (bool) {
-      this.setState({page: 2});
 
-    } else {
-      this.setState({page: this.state.page+1});
-    }
-      fetch(url).then(response => response.json())
+    fetch("https://as-api-thetoto.herokuapp.com/profile/fr/"+UIConstants.getCurrentSite() + '/' +this.id).then(response => response.json())
     .then(data => {
-      console.log('act comm ' + url);
-      if (bool) {
-        that.setState({
-          comments: data.main
-        });
-      } else {
-        that.setState({
-          comments: [...this.state.comments, ...data.main]
-        });
-      }
+      console.log('act profile ' + this.id);
+      that.setState(data);
+      this.props.navigation.setParams({title: "Profil de " + data.infos.pseudo});
+      console.log(data.infos.pseudo);
     })
     .catch(error => console.log('error:', error));
-  }
-
-  sendMessage() {
-    if (this.state.message == "") {
-      alert('Vous devez entrer un commentaire !');
-      return;
-    }
-    if (!UIConstants.isConnect()) {
-      alert("Vous n'êtes pas connecté !");
-      return;
-     }
-    let newCom = {
-      "id": "-1",
-      "date": "",
-      "author": {
-        "id": UIConstants.id,
-        "name": UIConstants.pseudo,
-        "avatar": UIConstants.avatar
-      },
-      "content": this.state.message
-    }
-    let mess = this.state.message;
-    this.setState({
-      comments: [newCom, ...this.state.comments],
-      message: ""
-     });
-    axios.request({
-      method: "post",
-      url: "https://as-api-thetoto.herokuapp.com/profile/" + this.state.id + "/comments",
-      data: {
-        'comm': mess,
-        'cookie': UIConstants.getCookie()
-      }
-    }).then(res => {
-      console.log(res);
-    });
-  }
-
-  _keyExtractor(item, index) {
-    return item.id;
-  }
-
-  _renderSeparator() {
-    return (
-      <View style={styles3.separator}/>
-    )
-  }
-
-  _renderItem(info) {
-    return (
-      <MyListItem
-      navigation={this.props.navigation}
-      item={info}
-      />
-    )
   }
 
   render() {
-    let cssAdd = "<style>img{max-width: 100% !important; max-height: 100% !important }</style>";
-    let items = [];
-
-    for (var prop in this.state.infos.main) {
-      if (prop == "Age" || prop == "Membersince") {
-        items.push({name: prop, content: new Date(this.state.infos.main[prop] * 1000).toLocaleDateString('fr-FR') });
-      } else {
-        items.push({name: prop, content: this.state.infos.main[prop]});
-      }
+    let flag, gender = <View />;
+    if (this.state.infos.main.country) {
+      console.log('yes' + this.state.infos.main.country);
+      flag = <Image style={{alignSelf:'center',height:20, width:33}} source={{uri: 'https://www.animationsource.org/images/shared/flags/'+this.state.infos.main.country+ '.gif'}} />
     }
-    let info = items.map(function (route, index) {
-      return(
-        <View key={index} style={styles.userInfo}>
-        <View style={styles.section}>
-          <RkText rkType='header3' style={styles.space}>{route.content}</RkText>
-          <RkText rkType='secondary1 hintColor'>{route.name}</RkText>
-        </View>
-        </View>
-      )
+    if (this.state.infos.main.gender) {
+      gender = <Image style={{alignSelf:'center',height:25, width:20}}  source={{uri: 'https://www.animationsource.org/images/shared/' + this.state.infos.main.gender + '.gif'}} />
+    }
+    let cssAdd = "<style>img{max-width: 100% !important; max-height: 100% !important }</style>";
+    let gal_list = ["fanart","fanimage","fangbook","fanfic","music","video"];
+    let type_list = ["fanart","fanimage","fangbook","fanfic","fanmusic","fanvideo"];
+    let screen_list = ["Artist","Artist","Artist2","Artist2","Artist2","Artist2"];
+    let infos_sup = ["group","email"];
+    let other = ["char","article","review", "contest", "project"]
+
+    let that = this;
+    let galleries = gal_list.map(function (item, index) {
+      if (that.state.infos.galleries[item]) {
+        console.log(item);
+        console.log(that.state.infos.galleries[item].count);
+        return(
+          <View key={that.state.infos.galleries[item].id} style={styles.section}>
+              <RkButton onPress={() => {
+                  that.props.navigation.navigate(screen_list[index], {authorid: that.state.infos.galleries[item].id, type: type_list[index], author: that.state.infos.pseudo});
+                }} style={styles.button}  rkType='small outline'>
+                <RkText rkType='awesome primary'>{FontAwesome[item]} : {that.state.infos.galleries[item].count}</RkText>
+              </RkButton>
+          </View>
+        )
+      }
     });
-    let navigationView = (
-      <RkAvoidKeyboard style={styles2.container} onResponderRelease={(event) => {
-        Keyboard.dismiss();
-      }}>
-      <FlatList
-      inverted
-        style={styles2.list}
-        data={this.state.comments}
-        extraData={this.state}
-        ItemSeparatorComponent={this._renderSeparator}
-        keyExtractor={this._keyExtractor}
-        renderItem={this.renderItem}
-        ListFooterComponent={<View style={{justifyContent: 'center', alignItems: 'center'}} ><RkButton onPress={() => { this.getComs(false) } } rkType='rounded outline' style={{width:200}}>Load More !</RkButton></View>}/>
-
-        <View style={styles2.footer}>
-        <RkButton style={styles2.plus} rkType='clear'>
-          <RkText rkType='awesome secondaryColor'>{FontAwesome.plus}</RkText>
-        </RkButton>
-
-        <RkTextInput
-          onChangeText={(message) => this.setState({message})}
-          value={this.state.message}
-          rkType='row sticker'
-          placeholder="Leave a comment..."/>
-
-        <RkButton onPress={() => {console.log(this.state.message); this.sendMessage()}} style={styles2.send} rkType='circle highlight'>
-          <Image source={require('../../assets/icons/sendIcon.png')}/>
-        </RkButton>
-      </View>
-      </RkAvoidKeyboard>
-    );
+    let infos = infos_sup.map(function (item, index) {
+      if (that.state.infos.main[item]) {
+        return(
+          <View key={index} style={styles.userInfo}>
+          <View style={styles.section}>
+            <RkText rkType='header3' style={styles.space}>{that.state.infos.main[item]}</RkText>
+            {/*<RkText rkType='secondary1 hintColor'>{item}</RkText>*/}
+          </View>
+          </View>
+        )
+      }
+    });
+    let brithday = <View />;
+    if (this.state.infos.main.birthday) {
+      brithday = (
+        <View style={styles.section}>
+          <RkText rkType='header3' style={styles.space}>{moment(this.state.infos.main.birthday, 'X').format("DD/MM/YY")}</RkText>
+          <RkText rkType='secondary1 hintColor'>Anniv'</RkText>
+        </View>
+      );
+    }
+    let wid = Dimensions.get('window').width;
+    let webview = <RkText>Loading...</RkText>;
+    if (this.state.infos.desc != "Loading...") {
+      webview = (
+        <MyWebView
+            source={{html: cssAdd + this.state.infos.desc}}
+            startInLoadingState={true}
+            defaultHeight={2000}
+        />
+      );
+    }
     return (
-      <DrawerLayoutAndroid
-      drawerWidth={350}
-      drawerPosition={DrawerLayoutAndroid.positions.Right}
-      renderNavigationView={() => navigationView}>
+      <ComDrawer url={"https://as-api-thetoto.herokuapp.com/profile/" + this.state.id} comments={this.state.comments} navigation={this.props.navigation}>
       <ScrollView style={styles.root}>
         <View style={[styles.header, styles.bordered]}>
           <View style={styles.row}>
             <View style={styles.buttons}>
               <RkButton style={styles.button} rkType='icon circle'>
-                <RkText rkType='moon large primary'>{FontIcons.profile}</RkText>
+                <RkText rkType='moon large primary awesome'>{FontIcons.profile}</RkText>
               </RkButton>
             </View>
             <Avatar img={{uri : this.state.infos.avatar}} rkType='big'/>
             <View style={styles.buttons}>
-              <RkButton style={styles.button} rkType='icon circle'>
-                <RkText rkType='moon large primary'>{FontIcons.mail}</RkText>
+              <RkButton onPress={() => {
+                  this.props.navigation.navigate('SendMp', {id: this.state.id, to: this.state.infos.pseudo, avatar: this.state.infos.avatar});
+                }} style={styles.button} rkType='icon circle'>
+                <RkText rkType='moon large primary awesome'>{FontIcons.mail}</RkText>
               </RkButton>
             </View>
           </View>
-          <View style={styles.section}>
-            <RkText rkType='header2'>{this.state.infos.pseudo}</RkText>
-          </View>
+          <View style={styles.section} ><View style={{flexDirection: 'row'}}>
+            <RkText rkType='header2'>{this.state.infos.pseudo}  </RkText>{flag}{gender}
+          </View></View>
+        </View>
+        <View style={styles.userInfo}>
+          {galleries}
         </View>
         <View style={styles.userInfo}>
           <View style={styles.section}>
-            <RkText rkType='header3' style={styles.space}>{this.state.infos.lang}</RkText>
-            <RkText rkType='secondary1 hintColor'>ServerSide</RkText>
+            <RkText rkType='header3' style={styles.space}>{moment(this.state.infos.main.registration, 'X').format("DD/MM/YY")}</RkText>
+            <RkText rkType='secondary1 hintColor'>Inscription</RkText>
           </View>
+              {brithday}
           <View style={styles.section}>
             <RkText rkType='header3' style={styles.space}>{this.state.id}</RkText>
             <RkText rkType='secondary1 hintColor'>ID</RkText>
           </View>
-          <View style={styles.section}>
-            <RkText rkType='header3' style={styles.space}>{this.state.infos.forumid}</RkText>
-            <RkText rkType='secondary1 hintColor'>Forum ID</RkText>
-          </View>
         </View>
-          {info}
-        <MyWebView
-            source={{html: cssAdd + this.state.infos.desc}}
-            startInLoadingState={true}
-            defaultHeight={400}
-        />
+          {infos}
+        {webview}
       </ScrollView>
-      </DrawerLayoutAndroid>
+      </ComDrawer>
     )
   }
 }
@@ -325,82 +226,14 @@ let styles = RkStyleSheet.create(theme => ({
   button: {
     marginTop: 27.5,
     alignSelf: 'center'
-  }
-}));
-
-let styles2 = RkStyleSheet.create(theme => ({
-  header: {
-    alignItems: 'center'
   },
-  avatar: {
-    marginRight: 16,
+  buttonMore: {
+    color: theme.colors.text.hint,
+    borderColor: theme.colors.text.hint
   },
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.screen.base
-  },
-  list: {
-    paddingHorizontal: 0
-  },
-  footer: {
-    flexDirection: 'row',
-    minHeight: 60,
-    padding: 10,
-    backgroundColor: theme.colors.screen.alter
-  },
-  item: {
-    marginVertical: 14,
-    flex: 1,
-    flexDirection: 'row'
-  },
-  itemIn: {},
-  itemOut: {
-    alignSelf: 'flex-end'
-  },
-  balloon: {
-    maxWidth: scale(250),
-    paddingHorizontal: 15,
-    paddingTop: 10,
-    paddingBottom: 15,
-    borderRadius: 20,
-  },
-  time: {
-    alignSelf: 'flex-end',
-    margin: 15
-  },
-  plus: {
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    marginRight: 7
-  },
-  send: {
-    width: 40,
-    height: 40,
-    marginLeft: 10,
-  }
-}));
-let styles3 = RkStyleSheet.create(theme => ({
-  root: {
-    backgroundColor: theme.colors.screen.base
-  },
-  container: {
-    paddingLeft: 19,
-    paddingRight: 16,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'flex-start'
-  },
-  content: {
-    marginLeft: 16,
-    flex: 1,
-  },
-  contentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 6
-  },
-  separator: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: theme.colors.border.base
+  buttonMore2: {
+    color: theme.colors.text.hint,
+    borderColor: theme.colors.text.hint,
+    width:200
   }
 }));

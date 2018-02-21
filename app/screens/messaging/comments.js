@@ -23,9 +23,6 @@ import {data} from '../../data';
 import { UIConstants } from '../../config/appConstants';
 import {FontAwesome} from '../../assets/icons';
 
-let moment = require('moment');
-
-
 class MyListItem extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -74,8 +71,13 @@ class MyListItem2 extends React.PureComponent {
 }
 
 export class Comments extends React.Component {
-  static navigationOptions = {
-    title: 'Chat '.toUpperCase()
+  static navigationOptions = ({navigation}) => {
+    let {params} = navigation.state;
+
+    return (
+      {
+        title: typeof(navigation.state.params)==='undefined' || typeof(navigation.state.params.title) === 'undefined' ? UIConstants.getCurrentSiteName(): navigation.state.params.title,
+      });
   };
 
   constructor(props) {
@@ -186,7 +188,6 @@ export class Comments extends React.Component {
   }
 
   _renderConnected(info) {
-    console.log(info);
     return (
       <MyListItem2
       navigation={this.props.navigation}
@@ -197,7 +198,7 @@ export class Comments extends React.Component {
 
   render() {
     let navigationView = (
-      <View style={{flex: 1, backgroundColor: '#fff'}}>
+      <View style={styles.drawer}>
               <RkText style={{ justifyContent: 'center', textAlign: 'center' }} >Personnes connectés :</RkText>
               <FlatList
               style={styles2.list}
@@ -247,6 +248,10 @@ export class Comments extends React.Component {
 }
 
 let styles = RkStyleSheet.create(theme => ({
+  drawer: {
+    backgroundColor: theme.colors.screen.base,
+    flex:1
+  },
   root: {
     backgroundColor: theme.colors.screen.base
   },

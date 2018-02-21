@@ -27,13 +27,15 @@ import { scale } from '../../utils/scale';
 import { FontAwesome } from '../../assets/icons';
 import ImageView from 'react-native-image-view';
 import { ComDrawer } from '../../components/comdrawer';
+import MyWebView from 'react-native-webview-autoheight';
+import { WebBrowser } from 'expo';
 
-export class Article extends React.Component {
+export class news extends React.Component {
   static navigationOptions = ({navigation}) => {
 
     return (
       {
-        title: typeof(navigation.state.params)==='undefined' || typeof(navigation.state.params.title) === 'undefined' ? 'Image': navigation.state.params.title,
+        title: typeof(navigation.state.params)==='undefined' || typeof(navigation.state.params.title) === 'undefined' ? 'News': "News",
       });
   };
 
@@ -41,14 +43,10 @@ export class Article extends React.Component {
     super(props);
     let {params} = this.props.navigation.state;
     this.id = params ? params.id : 1;
-    this.authorid = params ? params.authorid : 1;
-    this.author = params ? params.author : "User";
-    this.type = params ? params.type : "fanimage";
     this.state = {
       title: "Loading...",
-      img: "http://",
       desc: "Loading...",
-      page:2,
+      id: 1,
       comments: [{
         "id": "-1",
         "date": "",
@@ -59,10 +57,6 @@ export class Article extends React.Component {
         },
         "content": "Loading...",
       }],
-      isVisible: false,
-      width: Dimensions.get('window').width,
-      height: 200,
-      message: ""
       
     }
   }
@@ -72,34 +66,77 @@ export class Article extends React.Component {
 
   }
 
-  getSize() {
-    Image.getSize(this.state.img, (width, height) => {
-      let ratio = width / this.state.width;
-      let newH = height/ratio
-      this.setState({height : newH});
-    });
-    
-  }
 
   getData() {
+    console.log("http://as-api.thetoto.tk/" +"news/" + this.id);
     let that = this;
     axios.request({
       method: "get",
-      url: "http://as-api.thetoto.tk/" + this.type + "/fr/" + UIConstants.getCurrentSite() + '/' + this.authorid + '/' + this.id,
+      url: "http://as-api.thetoto.tk/" +"news/" + this.id,
       responseType:'json'
     }).then(res => {
       that.setState({
-        title: res.data.title,
-        img: "https://www.animationsource.org/" + res.data.img,
-        desc: res.data.desc,
-        comments: res.data.comment
+        id: res.data.news.id,
+        title: res.data.news.title,
+        desc: res.data.news.content,
+        //comments: res.data.comment,
+        author: res.data.news.author,
       });
-      this.getSize();
-      this.props.navigation.setParams({title: res.data.title});
+      this.props.navigation.setParams({title: res.data.news.sitename});
+    });
+    axios.request({
+      method: "get",
+      url: "http://as-api.thetoto.tk/" +"news/" + this.id + "/comments",
+      responseType:'json'
+    }).then(res => {
+      that.setState({
+        comments: res.data.main,
+      });
+    });
+  }
+
+  getCom() {
+    let that = this;
+    axios.request({
+      method: "get",
+      url: "http://as-api.thetoto.tk/" + this.type + "/fr/" + UIConstants.getCurrentSite() + '/' + this.authorid + "?page=" + that.state.page,
+      responseType:'json'
+    }).then(res => {
+      if (res.data.obj.length == 0) {
+        console.log('No more imgs');
+        that.setState({more: false});
+        return;
+      }
+      if (that.state.page == 1) {
+        that.setState({
+          imgs: res.data.obj,
+          comments: res.data.comment,
+          page: that.state.page+1
+        });
+      } else {
+      that.setState({
+        imgs: [...that.state.imgs, ...res.data.obj],
+        comments: res.data.comment,
+        page: that.state.page+1
+      });
+    }
     });
   }
 
   render() {
+    let cssAdd = "<style>img{max-width: 100% !important; max-height: 100% !important }</style>";
+    let webview = (<RkText> Loading... </RkText>);
+    if (this.state.desc != "Loading...") {
+      webview = (
+        <MyWebView
+        ref={(ref) => { this.webview = ref; }}
+        source={{html: cssAdd + this.state.desc}}
+        startInLoadingState={true}
+        defaultHeight={1000}
+        onShouldStartLoadWithRequest={false}
+        />
+      );
+    }
     let modal = (
       <ImageView
         title={this.state.title}
@@ -107,34 +144,21 @@ export class Article extends React.Component {
         isVisible={this.state.isVisible}
       />
       );
+
     return (
-      <ComDrawer url={"http://as-api.thetoto.tk/" + this.type + "/fr/" + UIConstants.getCurrentSite() + '/' + this.authorid + '/' + this.id}  comments={this.state.comments} navigation={this.props.navigation}>
+    <ComDrawer url={"https://as-api-thetoto.herokuapp.com/news/" + this.state.id} comments={this.state.comments} navigation={this.props.navigation}>
       <ScrollView style={styles.root}>
         <RkCard rkType='article'>
-        <TouchableOpacity onPress={() => {
-                  //Expo.ScreenOrientation.allow(Expo.ScreenOrientation.Orientation.ALL);
-                  this.setState({isVisible: true});
-                }}>
-          <Image rkCardImg style={{height: this.state.height, width: this.state.width}} source={{uri: this.state.img}}/>
-          </TouchableOpacity>
-          {modal}
           <View rkCardHeader>
             <View>
               <RkText style={styles.title} rkType='header4'>{this.state.title}</RkText>
-              <RkText rkType='secondary2 hintColor'>{this.author}</RkText>
-            </View>
-            <RkButton onPress={() => this.props.navigation.navigate('Artist', {type: this.type, authorid: this.authorid, author: this.author})} style={styles.button} rkType='icon circle'>
-                <RkText rkType='moon awesome large primary'>{FontAwesome[this.type]}</RkText>
-            </RkButton>
-          </View>
-          <View rkCardContent>
-            <View>
-              <RkText rkType='primary3 bigLine'>{this.state.desc}</RkText>
+              <RkText rkType='secondary2 hintColor'>{this.state.author}</RkText>
             </View>
           </View>
         </RkCard>
+        {webview}
       </ScrollView>
-      </ComDrawer>
+    </ComDrawer>
     )
   }
 }

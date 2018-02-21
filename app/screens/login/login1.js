@@ -69,7 +69,7 @@ export class LoginV1 extends React.Component {
         Expo.SecureStore.setItemAsync('id', res.data.infos.id);
         UIConstants.success = true;
         alert('Vous êtes connecté !');
-        that.props.navigation.goBack()
+        that.props.navigation.navigate('GridV2')
       } else {
         alert('Erreur de connexion. Vérifiez vos infos.');
       }
@@ -88,21 +88,10 @@ export class LoginV1 extends React.Component {
         style={styles.screen}>
         {image}
         <View style={styles.container}>
-          <View style={styles.buttons}>
-            <RkButton style={styles.button} rkType='social'>
-              <RkText rkType='awesome hero accentColor'>{FontAwesome.twitter}</RkText>
-            </RkButton>
-            <RkButton style={styles.button} rkType='social'>
-              <RkText rkType='awesome hero accentColor'>{FontAwesome.google}</RkText>
-            </RkButton>
-            <RkButton style={styles.button} rkType='social'>
-              <RkText rkType='awesome hero accentColor'>{FontAwesome.facebook}</RkText>
-            </RkButton>
-          </View>
-          <RkTextInput rkType='rounded' placeholder='Username'
+          <RkTextInput rkType='bordered' placeholder='Username'
           onChangeText={(text) => this.setState({user: text})}
           value={this.state.user} />
-          <RkTextInput rkType='rounded' placeholder='Password' secureTextEntry={true}
+          <RkTextInput rkType='bordered' placeholder='Password' secureTextEntry={true}
           onChangeText={(text) => this.setState({pass: text})}
           value={this.state.pass} />
           <GradientButton onPress={() => {
@@ -114,6 +103,12 @@ export class LoginV1 extends React.Component {
               <RkButton rkType='clear'>
                 <RkText rkType='header6' onPress={() => this.props.navigation.navigate('SignUp')}> Sign up
                   now </RkText>
+              </RkButton>
+            </View>
+            <View style={styles.textRow}>
+              <RkText rkType='primary3'>Forgot your Password ?</RkText>
+              <RkButton rkType='clear'>
+                <RkText rkType='header6' onPress={() => this.props.navigation.navigate('password')}> Recover it ! </RkText>
               </RkButton>
             </View>
           </View>

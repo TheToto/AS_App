@@ -3,15 +3,18 @@ import {
   View,
   Image,
   StatusBar,
-  Platform
+  Platform,
+  ScrollView
 } from 'react-native';
 import {
   RkText,
   RkButton,
   RkTheme,
-  RkStyleSheet
+  RkStyleSheet,
+  
 } from 'react-native-ui-kitten';
 import {DarkKittenTheme} from '../../config/darkTheme';
+import * as SiteTheme from '../../config/sitetheme/index'
 import {KittenTheme} from '../../config/theme';
 import {GradientButton} from '../../components/gradientButton';
 import {scale, scaleModerate, scaleVertical} from '../../utils/scale';
@@ -27,6 +30,7 @@ export class Themes extends React.Component {
 
   render() {
     return (
+      <ScrollView>
       <View style={styles.root}>
         <View style={styles.container}>
           <RkText>Light Theme</RkText>
@@ -51,8 +55,30 @@ export class Themes extends React.Component {
             }}/>
 
         </View>
-      </View>
+        <View style={styles.container}>
+          <RkText>Balto Theme</RkText>
+          <GradientButton
+            text='APPLY'
+            onPress={() => {
+              RkTheme.setTheme(SiteTheme.BaltoTheme);
+              StatusBar.setBarStyle('light-content', true);
+              Platform.OS == 'android' && StatusBar.setBackgroundColor(SiteTheme.BaltoTheme.colors.screen.base);
+            }}/>
 
+        </View>
+        <View style={styles.container}>
+          <RkText>Roi Lion Theme</RkText>
+          <GradientButton
+            text='APPLY'
+            onPress={() => {
+              RkTheme.setTheme(SiteTheme.RoiLionTheme);
+              StatusBar.setBarStyle('light-content', true);
+              Platform.OS == 'android' && StatusBar.setBackgroundColor(SiteTheme.RoiLionTheme.colors.screen.base);
+            }}/>
+
+        </View>
+      </View>
+      </ScrollView>
     )
   }
 }

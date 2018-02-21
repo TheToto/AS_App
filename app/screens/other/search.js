@@ -16,12 +16,11 @@ import {Avatar} from '../../components';
 import {FontAwesome} from '../../assets/icons';
 import {data} from '../../data';
 import { UIConstants } from '../../config/appConstants';
-import { ComDrawer } from '../../components/comdrawer';
 let moment = require('moment');
 
-export class ChatList extends React.Component {
+export class Search extends React.Component {
   static navigationOptions = {
-    title: 'Messages privés'
+    title: 'Search'.toUpperCase()
   };
 
   constructor(props) {
@@ -29,53 +28,37 @@ export class ChatList extends React.Component {
     this.renderHeader = this._renderHeader.bind(this);
     this.renderItem = this._renderItem.bind(this);
     this.state = {
-      data: [],
+      query: "",
+      data: [{"id":"-1","content":"Search Something."}]
     }
   }
 
   componentDidMount() {
-    this.chats = data.getChatList();
     this.setState({
-      data: [{"id":"-1","title":"Loading... ","from":"-","date":"-"}]
+      data: [{"id":"-1","content":"Search Something."}]
     });
-    this.getData();
   }
 
   getData() {
-    let that = this;
-    if (!UIConstants.isConnect()) {
-      alert("Vous n'êtes pas connecté !");
-      return;
+    if (this.state.query == "") {
+      this.setState({
+        data: [{"id":"-1","content":"Search Something."}]
+      });
     }
+    let that = this;
+    let url = "https://as-api-thetoto.herokuapp.com/search/fr/hub/profile/object/" + this.state.query;
     axios.request({
-      method: "post",
-      url: "https://as-api-thetoto.herokuapp.com/mp",
-      data: {
-        'cookie': UIConstants.getCookie()
-      }
+      method: "get",
+      url: url,
     }).then(res => {
-      console.log(res.data.mps);
+      console.log('act search ' + url);
+      if (!res.data.success) {
+        alert(res.data.error);
+      }
       that.setState({
-        data: res.data.mps,
-        save: res.data.mps,
+        data: res.data.result
       });
     });
-  }
-
-  _filter(text) {
-    console.log(text);
-    if (text == "") {
-      this.setState({data: this.state.save});
-    }
-    let pattern = new RegExp(text,'i');
-    let chats = _.filter(this.state.save, (chat) => {
-      if (chat.title.search(pattern) != -1
-        || chat.from.search(pattern) != -1) {
-        return chat;
-        }
-    });
-
-    this.setState({data: chats});
   }
 
   _keyExtractor(item, index) {
@@ -93,7 +76,9 @@ export class ChatList extends React.Component {
       <View style={styles.searchContainer}>
         <RkTextInput autoCapitalize='none'
                      autoCorrect={false}
-                     onChange={(event) => this._filter(event.nativeEvent.text)}
+                     onChangeText={(text) => this.setState({query: text})}
+                     value={this.state.query}
+                     onSubmitEditing={(event) => this.getData()}
                      label={<RkText rkType='awesome'>{FontAwesome.search}</RkText>}
                      rkType='row'
                      placeholder='Search'/>
@@ -103,17 +88,10 @@ export class ChatList extends React.Component {
 
   _renderItem(info) {
     return (
-      <TouchableOpacity onPress={() => this.props.navigation.navigate('Message', {id: info.item.id})}>
+      <TouchableOpacity onPress={() => this.props.navigation.navigate('ProfileV2', {id: info.item.id})}>
         <View style={styles.container}>
-          
-          <View style={styles.content}>
             <View style={styles.contentHeader}>
-              <RkText rkType='header5'>{info.item.title}</RkText>
-              <RkText rkType='secondary4 hintColor'>
-                {info.item.date}
-              </RkText>
-            </View>
-            <RkText numberOfLines={2} rkType='primary3 mediumLine' style={{paddingTop: 5}}>{info.item.from}</RkText>
+              <RkText rkType='header5'>{info.item.content}</RkText>
           </View>
         </View>
       </TouchableOpacity>
@@ -122,7 +100,6 @@ export class ChatList extends React.Component {
 
   render() {
     return (
-      
       <FlatList
         style={styles.root}
         data={this.state.data}
@@ -147,11 +124,9 @@ let styles = RkStyleSheet.create(theme => ({
     alignItems: 'center'
   },
   container: {
-    paddingLeft: 19,
-    paddingRight: 16,
-    paddingBottom: 12,
-    paddingTop: 7,
-    flexDirection: 'row'
+    flexDirection: 'row',
+    padding: 16,
+    alignItems: 'center'
   },
   content: {
     marginLeft: 16,
@@ -160,10 +135,10 @@ let styles = RkStyleSheet.create(theme => ({
   contentHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6
+    marginBottom: 0
   },
   separator: {
-    height: StyleSheet.hairlineWidth,
+    height: StyleSheet.hairlineWidth +1,
     backgroundColor: theme.colors.border.base
   }
 }));

@@ -5,7 +5,8 @@ import {
   ScrollView,
   Image,
   Platform,
-  StyleSheet
+  StyleSheet,
+  Dimensions
 } from 'react-native';
 import {NavigationActions} from 'react-navigation';
 import {
@@ -28,7 +29,7 @@ export class SideMenu extends React.Component {
     let resetAction = NavigationActions.reset({
       index: 0,
       actions: [
-        NavigationActions.navigate({routeName: route.id})
+        NavigationActions.navigate({routeName: route.id, params: route.params},)
       ]
     });
     this.props.navigation.dispatch(resetAction)
@@ -46,14 +47,14 @@ export class SideMenu extends React.Component {
       return (
         <TouchableHighlight
           style={styles.container}
-          key={route.id}
+          key={index}
           underlayColor={RkTheme.current.colors.button.underlay}
           activeOpacity={1}
           onPress={() => this._navigateAction(route)}>
           <View style={styles.content}>
             <View style={styles.content}>
               <RkText style={styles.icon}
-                      rkType='moon primary xlarge'>{route.icon}</RkText>
+                      rkType='moon primary xlarge awesome'>{route.icon}</RkText>
               <RkText>{route.title}</RkText>
             </View>
             <RkText rkType='awesome secondaryColor small'>{FontAwesome.chevronRight}</RkText>
@@ -67,10 +68,11 @@ export class SideMenu extends React.Component {
         <ScrollView
           showsVerticalScrollIndicator={false}>
           <View style={[styles.container, styles.content]}>
-            {this._renderIcon()}
+            <Image style={{marginRight: 5, width: 60,height: 60}} source={{uri : UIConstants.getCurrentSiteBadge()}}/>
             <RkText rkType='logo'>{UIConstants.getCurrentSiteName()}</RkText>
           </View>
           {menu}
+        <View style={styles.finish} ></View>
         </ScrollView>
       </View>
     )
@@ -78,6 +80,11 @@ export class SideMenu extends React.Component {
 }
 
 let styles = RkStyleSheet.create(theme => ({
+  finish: {
+    borderColor: theme.colors.border.base,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    flex:1,
+  },
   container: {
     height: 80,
     paddingHorizontal: 16,
@@ -86,12 +93,13 @@ let styles = RkStyleSheet.create(theme => ({
   },
   root: {
     paddingTop: Platform.OS === 'ios' ? 20 : 0,
-    backgroundColor: theme.colors.screen.base
+    backgroundColor: theme.colors.screen.base,
+    flex:1
   },
   content: {
     flex: 1,
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   icon: {
     marginRight: 13,

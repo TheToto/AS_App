@@ -38,9 +38,11 @@ export class SplashScreen extends React.Component {
     cookie = Expo.SecureStore.getItemAsync('cookie');
     cookie.then(function(value) {
       console.log("load : " + value);
-      if (cookie == "") {
+      that.setState({progress:0.25});
+      if (value == "" || value == null || value == undefined) {
         ToastAndroid.show('Vous n\'êtes pas connecté à AS.', ToastAndroid.SHORT);
         console.log("Pas connecté");
+        that.setState({progress:1});
         return;
       }
       axios.request({
@@ -66,8 +68,17 @@ export class SplashScreen extends React.Component {
           ToastAndroid.show('Votre session a expiré ! Veuillez vous reconnecter à AS.', ToastAndroid.SHORT);
           console.log("Expiré");
         }
-  
-      });
+        that.setState({progress:1});
+      }).catch(error => { 
+        ToastAndroid.show('Erreur de connexion.', ToastAndroid.SHORT);
+        console.log(error);
+        that.setState({progress:1});
+       });
+    });
+    cookie.catch(function(error) {
+      ToastAndroid.show('Vous n\'êtes pas connecté à AS.', ToastAndroid.SHORT);
+      console.log("Pas connecté (catch)");
+      that.setState({progress:1});
     });
 
   }
@@ -88,12 +99,13 @@ export class SplashScreen extends React.Component {
           this.props.navigation.dispatch(toHome)
         }, timeFrame);
       } else {
-        let random = Math.random() * 0.5;
+        /*let random = Math.random() * 0.5;
         let progress = this.state.progress + random;
         if (progress > 1) {
           progress = 1;
         }
         this.setState({progress});
+        */
       }
     }, timeFrame)
 
