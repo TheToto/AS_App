@@ -33,7 +33,9 @@ export class UIConstants {
     { text: "Tarzan", alias:"tarzan", icon: "https://www.animationsource.org/sites_content/tarzan/img_layout/dans_la_jungle/site_asource_icon.png", badge : "https://www.animationsource.org/forum/images/postit_tarzan.png", iconColor: "#ea943b" },
     { text: "My Little Pony", alias:"petit_poney", icon: "https://www.animationsource.org/sites_content/my_little_poney/img_layout/dans_le_monde_d_equestria/site_asource_icon.png", badge : "https://www.animationsource.org/forum/images/postit_mlp.png", iconColor: "#ea943b" },
     { text: "Volt", alias:"volt", icon: "https://www.animationsource.org/sites_content/volt/img_layout/i_need_a_hero_/site_asource_icon.png", badge : "https://www.animationsource.org/forum/images/postit_bolt.png", iconColor: "#ea943b" },
-    { text: "Zootopie", alias:"zootopia", icon: "https://www.animationsource.org/sites_content/zootopie/img_layout/entrez_dans_zootopia_/site_asource_icon.png", badge : "https://www.animationsource.org/forum/images/post_it_zootopia.png", iconColor: "#ea943b" }
+    { text: "Zootopie", alias:"zootopia", icon: "https://www.animationsource.org/sites_content/zootopie/img_layout/entrez_dans_zootopia_/site_asource_icon.png", badge : "https://www.animationsource.org/forum/images/post_it_zootopia.png", iconColor: "#ea943b" },
+    { text: "Lilo & Stitch", alias:"lilo_stitch", icon: "https://www.animationsource.org/sites_content/lilo_stitch/img_layout/sous_le_soleil_d_hawai/site_asource_icon.png", badge: "https://www.animationsource.org/forum/images/postit_stitch.png", iconColor: "#ea943b" },
+    { text: "Hub", alias:"hub", icon: "https://www.animationsource.org/sites_content/lilo_stitch/img_layout/sous_le_soleil_d_hawai/site_asource_icon.png", badge: "https://www.animationsource.org/images/shared/BANNER-AS.png", iconColor: "#ea943b" }
   ];
 
 
@@ -42,6 +44,8 @@ export class UIConstants {
   static HeaderHeight = UIConstants.AppbarHeight + UIConstants.StatusbarHeight;
 
   static currentSite = UIConstants.sites_list[0];
+  static currentChatType = 'chat';
+
   static getCurrentSite() {
     return UIConstants.currentSite.alias;
   }
@@ -73,4 +77,48 @@ export class UIConstants {
   static isConnect() {
     return UIConstants.success;
   }
+
+  // CONTAINS .HTML : &numg=id 
+  static decode_AS_URL(url, nav) {
+    let reg = /.org\/([^/]*)\/([^/]*)\/?([^/]*)\/?([^/]*)\/?([^/]*)/
+    let res = reg.exec(url);
+    // 1 : site, 2 : lang, 3: type, 4: args (if no 4 : main page) (and no 3 : home page...)
+    // IF 5; 1 : site,2 : lang, 3: type, 4: NOTHING, 5 : different args.
+    if (res == undefined) {
+      alert('Pas supporté ou pas un lien vers AS... Je t\'ouvre le navigateur.');
+      return;
+    }
+    if (res[2] != 'fr') {
+      alert('Seul le francais est supporté pour le moment... Je t\'ouvre le navigateur.');
+      return;
+    }
+    let navtype;
+    let params = [];
+    if (res[5] == undefined  || res[5] == "") {
+      let reg = /[(\?|\&)]([^=]+)\=([^&#]+)/g
+
+      params = reg.exec(res[4]).slice(1);
+    } else {
+      let reg = /([0-9]+).html[(\?|\&)]([^=]+)\=([^&#]+)/g
+      params = reg.exec(res[4]);
+      params[0] = 'numg';
+    }
+    
+    UIConstants.setCurrentSite(res[1]);
+    switch(res[3]) {
+      case "chars":
+        alert('Unsupported');
+        break;
+      case 'readmp':
+        break;
+      case 'comments':
+        break;
+      default:
+        break;
+    }
+
+    nav.navigate('SendMp');
+    //Expo.WebBrowser.openBrowserAsync(url);
+  }
 }
+

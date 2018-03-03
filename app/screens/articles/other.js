@@ -27,10 +27,10 @@ import { scale } from '../../utils/scale';
 import { FontAwesome } from '../../assets/icons';
 import ImageView from 'react-native-image-view';
 import { ComDrawer } from '../../components/comdrawer';
-import PersoWebView from '../../components/webview';
+import MyWebView from 'react-native-webview-autoheight';
 import { WebBrowser } from 'expo';
 
-export class news extends React.Component {
+export class other extends React.Component {
   static navigationOptions = ({navigation}) => {
 
     return (
@@ -128,13 +128,12 @@ export class news extends React.Component {
     let webview = (<RkText> Loading... </RkText>);
     if (this.state.desc != "Loading...") {
       webview = (
-        <PersoWebView
-        navigation={this.props.navigation}
-        startInLoadingState={true}
+        <MyWebView
         ref={(ref) => { this.webview = ref; }}
         source={{html: cssAdd + this.state.desc}}
         startInLoadingState={true}
         defaultHeight={1000}
+        onShouldStartLoadWithRequest={false}
         />
       );
     }

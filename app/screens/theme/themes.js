@@ -18,6 +18,67 @@ import * as SiteTheme from '../../config/sitetheme/index'
 import {KittenTheme} from '../../config/theme';
 import {GradientButton} from '../../components/gradientButton';
 import {scale, scaleModerate, scaleVertical} from '../../utils/scale';
+import { Permissions, Notifications } from 'expo';
+import axios from 'axios';
+import { UIConstants } from '../../config/appConstants';
+
+async function registerForPushNotificationsAsync(type) {
+  const { status: existingStatus } = await Permissions.getAsync(
+    Permissions.NOTIFICATIONS
+  );
+  let finalStatus = existingStatus;
+
+  // only ask if permissions have not already been determined, because
+  // iOS won't necessarily prompt the user a second time.
+  if (existingStatus !== 'granted') {
+    // Android remote notification permissions are granted during the app
+    // install, so this will only ask on iOS
+    const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+    finalStatus = status;
+  }
+
+  // Stop here if the user did not grant permissions
+  if (finalStatus !== 'granted') {
+    return;
+  }
+
+  // Get the token that uniquely identifies this device
+  let token = await Notifications.getExpoPushTokenAsync();
+
+  // POST the token to your backend server from where you can retrieve it to send push notifications.
+  console.log(token);
+  if (type == "news") {
+    axios.post('http://as-api.thetoto.tk/notif/', {
+      token: token,
+      pseudo: UIConstants.pseudo,
+      id: UIConstants.id
+    })
+    .then(function (response) {
+      alert('C\'est OK');
+    })
+    .catch(function (error) {
+      alert('Erreur server');
+    });
+  } else {
+    if (!UIConstants.isConnect()) {
+      alert('Vous n\'êtes pas connecté !');
+      return;
+    }
+    axios.post('https://notif-manager.herokuapp.com/notif/', {
+      token: token,
+      cookie: UIConstants.getCookie(),
+      pseudo: UIConstants.pseudo,
+      id: UIConstants.id
+    })
+    .then(function (response) {
+      alert('C\'est OK');
+    })
+    .catch(function (error) {
+      alert('Erreur server');
+    });
+  }
+  return token;
+}
 
 export class Themes extends React.Component {
   static navigationOptions = {
@@ -26,6 +87,10 @@ export class Themes extends React.Component {
 
   constructor(props) {
     super(props);
+  }
+
+  componentDidMount() {
+    
   }
 
   render() {
@@ -76,6 +141,22 @@ export class Themes extends React.Component {
               Platform.OS == 'android' && StatusBar.setBackgroundColor(SiteTheme.RoiLionTheme.colors.screen.base);
             }}/>
 
+        </View>
+        <View style={styles.container}>
+          <RkText>Notif News</RkText>
+          <GradientButton
+            text='APPLY'
+            onPress={() => {
+              registerForPushNotificationsAsync("news");
+            }}/>
+        </View>
+        <View style={styles.container}>
+          <RkText>Notif site</RkText>
+          <GradientButton
+            text='APPLY'
+            onPress={() => {
+              registerForPushNotificationsAsync("site");
+            }}/>
         </View>
       </View>
       </ScrollView>

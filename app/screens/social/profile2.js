@@ -22,7 +22,7 @@ import {FontIcons} from '../../assets/icons';
 import {FontAwesome} from '../../assets/icons';
 import {scale} from '../../utils/scale';
 import formatNumber from '../../utils/textUtils';
-import MyWebView from 'react-native-webview-autoheight';
+import PersoWebView from '../../components/webview';
 import { UIConstants } from '../../config/appConstants';
 import { ComDrawer } from '../../components/comdrawer';
 const moment = require('moment');
@@ -132,7 +132,8 @@ export class ProfileV2 extends React.Component {
     let webview = <RkText>Loading...</RkText>;
     if (this.state.infos.desc != "Loading...") {
       webview = (
-        <MyWebView
+        <PersoWebView
+            navigation={this.props.navigation}
             source={{html: cssAdd + this.state.infos.desc}}
             startInLoadingState={true}
             defaultHeight={2000}

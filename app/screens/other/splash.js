@@ -61,11 +61,11 @@ export class SplashScreen extends React.Component {
           UIConstants.id = res.data.infos.id;
           Expo.SecureStore.setItemAsync('id', res.data.infos.id);
           UIConstants.success = true;
-          ToastAndroid.show('Vous êtes connecté à AS.', ToastAndroid.SHORT);
+          ToastAndroid.show('Vous êtes connecté à AS. (' + UIConstants.pseudo + ')', ToastAndroid.SHORT);
           console.log("Connecté");
           that.props.navigation.goBack()
         } else {
-          ToastAndroid.show('Votre session a expiré ! Veuillez vous reconnecter à AS.', ToastAndroid.SHORT);
+          ToastAndroid.show('Votre session a expiré (' + UIConstants.pseudo + ') ! Veuillez vous reconnecter à AS.', ToastAndroid.SHORT);
           console.log("Expiré");
         }
         that.setState({progress:1});

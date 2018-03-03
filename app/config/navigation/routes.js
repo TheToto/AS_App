@@ -79,6 +79,16 @@ export const MyRoutes = [
     icon: FontIcons.theme,
   },
   {
+    id: 'Notifications',
+    title: 'Notifications',
+    screen: Screens.Notifications
+  },
+  {
+    id: 'List',
+    title: 'List Menu',
+    screen: Screens.ListMenu
+  },
+  {
     id: 'Articles2',
     title: 'Fan Images',
     params: {type:'fanimage'},

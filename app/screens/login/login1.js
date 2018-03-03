@@ -68,12 +68,14 @@ export class LoginV1 extends React.Component {
         UIConstants.id = res.data.infos.id;
         Expo.SecureStore.setItemAsync('id', res.data.infos.id);
         UIConstants.success = true;
-        alert('Vous êtes connecté !');
+        alert('Vous êtes connecté ! (' + UIConstants.pseudo + ')');
         that.props.navigation.navigate('GridV2')
       } else {
         alert('Erreur de connexion. Vérifiez vos infos.');
       }
 
+    }).catch(eror => {
+      alert('Erreur API');
     });
     
   }

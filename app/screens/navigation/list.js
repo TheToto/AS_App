@@ -1,9 +1,12 @@
 import React from 'react';
+import axios from 'axios';
 import {
   ListView,
   TouchableHighlight,
   View,
-  StyleSheet
+  StyleSheet,
+  FlatList,
+  Image
 } from 'react-native';
 import {
   RkText,
@@ -11,60 +14,135 @@ import {
   RkTheme
 } from 'react-native-ui-kitten';
 import {MainRoutes} from '../../config/navigation/routes';
+import { UIConstants } from '../../config/appConstants';
+
+import AutoHeightImage from 'react-native-auto-height-image';
 
 export class ListMenu extends React.Component {
   static navigationOptions = {
-    title: 'List Menu'.toUpperCase()
+    title: 'Plan du Site'.toUpperCase()
   };
 
   constructor(props) {
     super(props);
-    let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-
-    this.data = ds.cloneWithRows(MainRoutes);
+    this.state = {
+      sitemap: [],
+    }
     this.renderRow = this._renderRow.bind(this);
   }
 
+  componentDidMount() {
+    this.recup();
+  }
+
+  recup () {
+    console.log('Trigger');
+    if (!UIConstants.isConnect()) {
+      alert('Vous n\'êtes pas connecté !');
+      return;
+    }
+
+    let that = this;
+    let url = "http://as-api-thetoto.herokuapp.com/sitemap/fr/" + UIConstants.getCurrentSite() + "/";
+    console.log(url);
+    
+    axios.request({
+      method: "GET",
+      url: url,
+    }).then(res => {
+      let sitemap = res.data.menu;
+      let thelist = [];
+      for (var item in sitemap) {
+        console.log(item);
+        thelist.push({
+          title: sitemap[item].title,
+          img: sitemap[item].img,
+          isTitle: true
+        });
+        let children = sitemap[item].children;
+        for (var elem in children) {
+          thelist.push({
+            title: children[elem].title,
+            url: children[elem].url,
+            isTitle: false
+          });
+        }
+      }
+      console.log(thelist);
+      this.setState({sitemap: thelist});
+    }).catch(error => {
+      console.log(error);
+    });
+  }
+
+  _keyExtractor(item, index) {
+    return index;
+  }
+
   _renderRow(row) {
-    return (
-      <TouchableHighlight
-        style={styles.item}
-        activeOpacity={1}
-        onPress={() => {
-          this.props.navigation.navigate(row.id)
-        }}>
-        <View style={styles.container}>
-          <RkText style={styles.icon}
-                  rkType='primary moon xxlarge'>{row.icon}</RkText>
-          <RkText>{row.title}</RkText>
+    if (row.item.isTitle) {
+      return (
+        <View
+          style={styles.item2}>
+          <View style={styles.container2}>
+            <AutoHeightImage width={300} source={{uri: row.item.img}} >
+            </AutoHeightImage>
+          </View>
         </View>
-      </TouchableHighlight>
-    )
+      )
+      // <RkText>{row.item.title}</RkText>
+    } else {
+      return (
+        <TouchableHighlight
+          style={styles.item}
+          activeOpacity={1}
+          onPress={() => {
+            this.props.navigation.navigate(row)
+          }}>
+          <View style={styles.container}>
+            <RkText>{row.item.title}</RkText>
+          </View>
+        </TouchableHighlight>
+      )
+    }
+
   }
 
   render() {
     return (
-      <ListView
+      <FlatList
         style={styles.list}
-        dataSource={this.data}
-        renderRow={this.renderRow}
-      />
+        data={this.state.sitemap}
+        extraData={this.state}
+        keyExtractor={this._keyExtractor}
+        renderItem={this.renderRow}/>
     )
   }
 }
 
 let styles = RkStyleSheet.create(theme => ({
   item: {
-    height: 80,
+    height: 50,
+    paddingLeft:10,
     justifyContent: 'center',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: theme.colors.border.base,
-    paddingHorizontal: 16
+    paddingHorizontal: 0
+  },
+  item2: {
+    justifyContent: 'center',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.colors.border.base,
+    paddingHorizontal: 0
   },
   list: {
     backgroundColor: theme.colors.screen.base,
   },
   container: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  container2: {
     flexDirection: 'row',
     alignItems: 'center'
   },

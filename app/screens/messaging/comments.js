@@ -8,7 +8,8 @@ import {
   Image,
   Keyboard,
   Text,
-  DrawerLayoutAndroid
+  DrawerLayoutAndroid,
+  ToastAndroid
 } from 'react-native';
 import {
   RkStyleSheet,
@@ -71,12 +72,41 @@ class MyListItem2 extends React.PureComponent {
 }
 
 export class Comments extends React.Component {
-  static navigationOptions = ({navigation}) => {
-    let {params} = navigation.state;
+  
 
+  static navigationOptions = ({navigation}) => {
+    //navigation.setParams({chatname: "Normal", this: function(){}});
+    let renderAvatar = () => {
+      return (
+        <RkButton rkType='outline small' onPress={() => {
+          
+          if (UIConstants.currentChatType == 'chat') {
+            UIConstants.currentChatType = 'chat_rpg';
+            navigation.setParams({chatname: "RPG"});
+          } else {
+            UIConstants.currentChatType = 'chat';
+            navigation.setParams({chatname: "Normal"});
+          }
+        ToastAndroid.show("Switch to " + UIConstants.currentChatType + "...", ToastAndroid.SHORT);
+        try {
+          navigation.state.params._this.recup();
+        } catch (e) {}
+        }}>
+        {navigation.state.params.chatname}
+        </RkButton>
+      );
+    };
+    let renderTitle = () => {
+      return (
+        <RkText>{typeof(navigation.state.params)==='undefined' || typeof(navigation.state.params.title) === 'undefined' ? UIConstants.getCurrentSiteName(): navigation.state.params.title}</RkText>
+      );
+    };
+    let rightButton = renderAvatar();
+    let title = renderTitle();
     return (
       {
-        title: typeof(navigation.state.params)==='undefined' || typeof(navigation.state.params.title) === 'undefined' ? UIConstants.getCurrentSiteName(): navigation.state.params.title,
+        headerTitle: title,
+        headerRight: rightButton
       });
   };
 
@@ -102,21 +132,31 @@ export class Comments extends React.Component {
       message:"",
     };
     let that = this;
+    UIConstants.currentChatType = 'chat';
     this.int = setInterval(function(){ that.recup(); }, 15000);
     this.recup();
     let postId = this.props.navigation.params ? this.props.navigation.params.postId : undefined;
     this.renderItem = this._renderItem.bind(this);
     this.renderConnected = this._renderConnected.bind(this);
   }
+
+  componentWillMount() {
+    this.props.navigation.setParams({ _this: this, chatname: "Normal" });
+  }
+
   componentWillUnmount() {
     console.log('unmount');
     clearInterval(this.int);
   }
 
   recup () {
+    console.log('Trigger');
     let that = this;
-    console.log('call recup ' + "https://as-api-thetoto.herokuapp.com/chat/fr/" + UIConstants.getCurrentSite() + "/chat");
-    let url = "https://as-api-thetoto.herokuapp.com/chat/fr/" + UIConstants.getCurrentSite() + "/chat";
+    let type = UIConstants.currentChatType;
+    if (UIConstants.getCurrentSite() == 'hub')
+      type = "chat_shared";
+    console.log('call recup ' + "https://as-api-thetoto.herokuapp.com/chat/fr/" + UIConstants.getCurrentSite() + "/" + type);
+    let url = "https://as-api-thetoto.herokuapp.com/chat/fr/" + UIConstants.getCurrentSite() + "/" + type;
     fetch(url).then(response => response.json())
     .then(data => {
       console.log('act chat' + UIConstants.getCurrentSite() + data);
@@ -150,14 +190,18 @@ export class Comments extends React.Component {
      "time": "1s",
      "id": Math.random()
    };
+   let type = UIConstants.currentChatType;
+   if (UIConstants.getCurrentSite() == 'hub')
+     type = "char_shared";
    let mess = this.state.message;
    this.setState({
      data: [newly_added_data, ...this.state.data],
      message: ""
     });
+  
    axios.request({
      method: "post",
-     url: "https://as-api-thetoto.herokuapp.com/chat/fr/" + UIConstants.getCurrentSite() + "/chat",
+     url: "https://as-api-thetoto.herokuapp.com/chat/fr/" + UIConstants.getCurrentSite() + "/" + type,
      data: {
        'message': mess,
        'cookie': UIConstants.getCookie()
