@@ -3,7 +3,8 @@ import axios from 'axios';
 import {
   ListView,
   View,
-  Image
+  Image,
+  TouchableOpacity
 } from 'react-native';
 import {RkStyleSheet, RkText} from 'react-native-ui-kitten';
 import {Avatar} from '../../components';
@@ -91,7 +92,12 @@ export class Notifications extends React.Component {
         <Image style={styles.attachment} source={{uri: "https://www.animationsource.org/images/shared/AS-REMOVE.png"}}/>;
 
     return (
-      <View style={styles.container}>
+      <TouchableOpacity
+      onPress={() => {
+      UIConstants.decode_AS_URL(row.item.url, this.props.navigation);
+     }}>
+      <View style={styles.container} >
+
         <Avatar img={{uri: row.item.avatar}}
                 rkType='circle'
                 style={styles.avatar}/>
@@ -108,6 +114,8 @@ export class Notifications extends React.Component {
           {attachment}
         </View>
       </View>
+      </TouchableOpacity>
+      
     )
   }
 

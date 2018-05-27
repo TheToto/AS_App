@@ -1,5 +1,6 @@
 import {Platform} from 'react-native';
 import * as SiteTheme from '../config/sitetheme/index';
+import {ToastAndroid} from 'react-native';
 
 export class UIConstants {
 
@@ -96,29 +97,44 @@ export class UIConstants {
     let params = [];
     if (res[5] == undefined  || res[5] == "") {
       let reg = /[(\?|\&)]([^=]+)\=([^&#]+)/g
-
       params = reg.exec(res[4]).slice(1);
     } else {
       let reg = /([0-9]+).html[(\?|\&)]([^=]+)\=([^&#]+)/g
-      params = reg.exec(res[4]);
+      params = reg.exec(res[5]);
       params[0] = 'numg';
     }
-    
+    var jsonp = {};
+    for (var i = 0; i < params.length-1; i++) {
+      jsonp[params[i]] = params[i+1];
+      i++;
+    }
+    console.log(jsonp);
+
     UIConstants.setCurrentSite(res[1]);
     switch(res[3]) {
       case "chars":
-        alert('Unsupported');
+        ToastAndroid.show ('Chars unsupported', ToastAndroid.SHORT);
         break;
       case 'readmp':
-        break;
+        if (jsonp.read) {
+          nav.navigate('Message', {id: jsonp.read});
+        } else {
+          nav.navigate('ChatList');
+        }
+        return;
       case 'comments':
+        if (jsonp.numg) {
+          nav.navigate('news', {id: jsonp.numg})
+        } else {
+          nav.navigate('Feed');
+        }
         break;
       default:
+        ToastAndroid.show ('Is it a AS link ?', ToastAndroid.SHORT);
         break;
     }
 
-    nav.navigate('SendMp');
-    //Expo.WebBrowser.openBrowserAsync(url);
+    Expo.WebBrowser.openBrowserAsync(url);
   }
 }
 

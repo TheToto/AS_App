@@ -36,12 +36,6 @@ export class ListMenu extends React.Component {
   }
 
   recup () {
-    console.log('Trigger');
-    if (!UIConstants.isConnect()) {
-      alert('Vous n\'êtes pas connecté !');
-      return;
-    }
-
     let that = this;
     let url = "http://as-api-thetoto.herokuapp.com/sitemap/fr/" + UIConstants.getCurrentSite() + "/";
     console.log(url);
@@ -97,7 +91,7 @@ export class ListMenu extends React.Component {
           style={styles.item}
           activeOpacity={1}
           onPress={() => {
-            this.props.navigation.navigate(row)
+            UIConstants.decode_AS_URL(row.item.url)
           }}>
           <View style={styles.container}>
             <RkText>{row.item.title}</RkText>
