@@ -6,7 +6,8 @@ A React Native application (Only Android) to use AnimationSource.org through my 
 (Ugly repository)
 
 Expo app : https://exp.host/@thetoto/animation-source (You need Expo App on Google Play Store to launch it)
-Android APK : https://github.com/Thetoto/AnimationSource-API/releases/download/0.1/AS_App_Thetoto_0.1.apk
+
+Android APK : https://github.com/Thetoto/AS_App/releases/download/0.1/AS_App_Thetoto_0.1.apk
 
 
 Working :
