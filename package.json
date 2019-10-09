@@ -11,7 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "axios": "^0.17.1",
+    "axios": "^0.18.1",
     "dateformat": "^3.0.2",
     "expo": "25.0.0",
     "expo-analytics": "1.0.6",
